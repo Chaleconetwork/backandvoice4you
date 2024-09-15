@@ -57,7 +57,7 @@ export function pauseAudios() {
         console.error("AudioContext is not initialized.");
         return;
     }
-    console.log(isPlaying)
+    
     if (isPlaying && track1 && track2) {
         pausedTime = audioContext.currentTime - startTime;
         track1.stop();

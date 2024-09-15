@@ -2,7 +2,7 @@ import { bufferToWave, loadAudioBuffers, mixAudios, pauseAudios, playAudios, res
 import { ChangeEvent, useEffect, useState } from "react"
 
 export default function Home() {
-    const [audioBuffers, setAudioBuffers] = useState<{ audioBuffer1: AudioBuffer, audioBuffer2: AudioBuffer } | null>(null);
+    const [audioBuffers, setAudioBuffers] = useState<{ audioBuffer1: AudioBuffer, audioBuffer2: AudioBuffer } | null>();
     const [isDownloadEnabled, setIsDownloadEnabled] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [fileNames, setFileNames] = useState<string[]>([]);
@@ -17,20 +17,17 @@ export default function Home() {
 
         const fileArray = Array.from(files);
         setSelectedFiles(prev => {
-            const newSelectedFiles = [...prev, ...fileArray];
-            if (newSelectedFiles.length === 2) {
+            const newSelectedFiles = [...prev, ...fileArray];          
+            if (newSelectedFiles.length === 2)
                 setIsDownloadEnabled(true)
-            }
-
             return newSelectedFiles;
-        })
-
+        })    
     };
 
     async function loadAudios() {
         try {
             if (selectedFiles.length < 2) return
-
+            
             const buffers = await Promise.all(selectedFiles.map(file => file.arrayBuffer()));
             const loadedBuffers = await loadAudioBuffers(buffers[0], buffers[1]);
             setAudioBuffers(loadedBuffers);
@@ -40,7 +37,6 @@ export default function Home() {
     }
 
     const handlePlay = () => {
-        loadAudios()
         if (audioBuffers && audioBuffers.audioBuffer1 && audioBuffers.audioBuffer2) {
             pauseAudios()
             playAudios(audioBuffers.audioBuffer1, audioBuffers.audioBuffer2);
@@ -62,52 +58,51 @@ export default function Home() {
     const handleGainChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = event.target;
         const newValue = parseFloat(value);
-    
+
         if (id === 'gain1') {
             setGain1(newValue);
         } else if (id === 'gain2') {
             setGain2(newValue);
         }
-    }    
+    }
 
     const MixAndDownload = async () => {
-        await loadAudios()
         if (!audioBuffers) {
             console.error("No hay buffers de audio cargados.");
             return;
         }
 
-        console.log(gain1, gain2)
         try {
-            const mixedBuffer = await mixAudios(audioBuffers.audioBuffer1, audioBuffers.audioBuffer2, gain1, gain2);
+            const mixedBuffer =  await mixAudios(audioBuffers.audioBuffer1, audioBuffers.audioBuffer2, gain1, gain2);
             const wavBlob = bufferToWave(mixedBuffer, mixedBuffer.length);
             const url = URL.createObjectURL(wavBlob);
 
-            // Crear un enlace de descarga temporal
             const link = document.createElement('a');
             link.href = url;
             link.download = "audio_mezclado.wav";
-            link.style.display = 'none'; // Ocultar el enlace
-            document.body.appendChild(link); // Agregar el enlace al DOM
+            link.style.display = 'none';
+            document.body.appendChild(link);
 
-            // Disparar el clic en el enlace para iniciar la descarga
             link.click();
-
-            // Limpiar el enlace después de la descarga
             document.body.removeChild(link);
-
-            // Revocar el URL después de usarlo
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Error mixing and downloading audio:", error);
         }
     };
 
-    useEffect(() => {
-        if (isDownloadEnabled) {
-            MixAndDownload();
+    const handleDownloadClick = async () => {
+        try {
+            if (isDownloadEnabled)
+                await MixAndDownload();
+        } catch (error) {
+            console.error("Error during download:", error);
         }
-    }, [isDownloadEnabled]);
+    };
+
+    useEffect(() => {
+        loadAudios()
+    }, [selectedFiles, gain1, gain2])
 
     return (
         <div className="w-[80%] mx-auto">
@@ -116,21 +111,20 @@ export default function Home() {
             <main className="mt-10">
                 <section className="border-2 rounded-md p-4 mb-4">
                     <h2 className="text-lg font-semibold mb-2">Panel de control</h2>
-                    <button onClick={handlePlay} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mr-3 p-2 rounded-md font-semibold cursor-pointer">Reproducir Mezcla</button>
-                    <button onClick={handlePause} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mr-3 p-2 rounded-md font-semibold cursor-pointer">Pausar</button>
-                    <button onClick={handleResume} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mr-3 p-2 rounded-md font-semibold cursor-pointer">Reanudar</button>
-                    <div className="border rounded-md text-center mr-3 inline-block p-2">
+                    <button onClick={handlePlay} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Reproducir Mezcla</button>
+                    <button onClick={handlePause} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Pausar</button>
+                    <button onClick={handleResume} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Reanudar</button>
+                    <div className="border rounded-md text-center mt-2 mr-3 inline-block p-2">
                         <label htmlFor="gain1" className="p-2 rounded-md font-semibold mr-3">Ganancia Audio 1:</label>
                         <input onChange={handleGainChange} id="gain1" className="outline-none text-center" type="number" defaultValue='1' step="0.1" min="0" max="10" />
                     </div>
-                    <div className="border rounded-md text-center mr-3 inline-block p-2">
+                    <div className="border rounded-md text-center mt-2 mr-3 inline-block p-2">
                         <label htmlFor="gain2" className="p-2 rounded-md font-semibold mr-3">Ganancia Audio 2:</label>
                         <input onChange={handleGainChange} id="gain2" className="outline-none text-center" type="number" defaultValue='1' step="0.1" min="0" max="10" />
                     </div>
                     <button
-                        onClick={MixAndDownload}
-                        className={`border mr-3 p-2 rounded-md font-semibold ${isDownloadEnabled ? 'bg-green-500 opacity-100 text-white cursor-pointer' : 'cursor-default opacity-55'}`}
-                        disabled={!isDownloadEnabled}
+                        onClick={() => handleDownloadClick()}
+                        className={`border mt-2 mr-3 p-2 rounded-md font-semibold ${isDownloadEnabled ? 'bg-green-500 opacity-100 text-white cursor-pointer' : 'cursor-default opacity-55'}`}
                     >
                         Descargar Audio Mezclado
                     </button>

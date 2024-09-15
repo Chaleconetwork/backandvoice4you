@@ -1,3 +1,4 @@
+import { CustomAlert } from "@/components/customAlert";
 import { bufferToWave, loadAudioBuffers, mixAudios, pauseAudios, playAudios, resumeAudios } from "@/utils/funcs/audioControls";
 import { ChangeEvent, useEffect, useState } from "react"
 
@@ -8,6 +9,7 @@ export default function Home() {
     const [fileNames, setFileNames] = useState<string[]>([]);
     const [gain1, setGain1] = useState<number>(1);
     const [gain2, setGain2] = useState<number>(1);
+    const [textAlert, setTextAlert] = useState<string>('')
 
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -27,7 +29,6 @@ export default function Home() {
     async function loadAudios() {
         try {
             if (selectedFiles.length < 2) return
-            
             const buffers = await Promise.all(selectedFiles.map(file => file.arrayBuffer()));
             const loadedBuffers = await loadAudioBuffers(buffers[0], buffers[1]);
             setAudioBuffers(loadedBuffers);
@@ -97,6 +98,8 @@ export default function Home() {
         try {
             if (isDownloadEnabled)
                 await MixAndDownload();
+            if (!isDownloadEnabled)
+                setTextAlert('Debes cargar mínimo 2 audios para usar esta opción')
         } catch (error) {
             console.error("Error during download:", error);
         }
@@ -107,7 +110,7 @@ export default function Home() {
     }, [selectedFiles, gain1, gain2])
 
     return (
-        <div className="w-[80%] mx-auto">
+        <div className="w-[80%] mx-auto">            
             <h1 className="font-bold text-5xl text-center uppercase mt-16">Back & Voice 4 You</h1>
             <h3 className="text-center text-xl mt-2">Mezcla audios para que suenen simultaneamente en un solo archivo</h3>
             <main className="mt-10">
@@ -145,6 +148,7 @@ export default function Home() {
                         </div>
                     </div>
                 </section>
+                <div className="text-blue-500 mt-6">{textAlert}</div>
                 <section className="bg-blue-500 mt-16 p-4 rounded-md">
                     <h2 className="text-center text-white">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Perferendis unde nobis reiciendis, adipisci veniam animi magnam expedita laborum, quisquam voluptatum quas, saepe corporis temporibus commodi libero amet laudantium fugiat! Porro.</h2>
                 </section>

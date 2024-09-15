@@ -84,7 +84,8 @@ export default function Home() {
             document.body.appendChild(link);
 
             link.click();
-            document.body.removeChild(link);
+            link.remove()
+            // document.body.removeChild(link);
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Error mixing and downloading audio:", error);

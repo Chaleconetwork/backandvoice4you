@@ -7,7 +7,7 @@ let pausedTime = 0;
 
 export function initAudioContext() {
     if (!audioContext) {
-        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContext = new (window.AudioContext)();
     }
     return audioContext;
 }
@@ -111,7 +111,6 @@ export function bufferToWave(abuffer: AudioBuffer, len: number): Blob {
         channels = [],
         sampleRate = abuffer.sampleRate;
 
-    let offset = 0;
     let pos = 0;
 
     function setUint16(data: number) {

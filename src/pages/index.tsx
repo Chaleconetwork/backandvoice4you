@@ -129,7 +129,7 @@ export default function Home() {
                     </div>
                     <button
                         onClick={MixAndDownload}
-                        className={`border mr-3 p-2 rounded-md font-semibold ${isDownloadEnabled ? 'bg-green-500 opacity-100 text-white cursor-pointer' : 'cursor-default'} opacity-55`}
+                        className={`border mr-3 p-2 rounded-md font-semibold ${isDownloadEnabled ? 'bg-green-500 opacity-100 text-white cursor-pointer' : 'cursor-default opacity-55'}`}
                         disabled={!isDownloadEnabled}
                     >
                         Descargar Audio Mezclado

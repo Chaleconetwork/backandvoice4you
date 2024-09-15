@@ -92,6 +92,7 @@ export default function Home() {
     };
 
     const handleDownloadClick = async () => {
+        console.log(isDownloadEnabled)
         try {
             if (isDownloadEnabled)
                 await MixAndDownload();

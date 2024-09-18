@@ -1,5 +1,6 @@
 import { bufferToWave, loadAudioBuffers, mixAudios, pauseAudios, playAudios, resumeAudios } from "@/utils/funcs/audioControls";
 import { ChangeEvent, useEffect, useState } from "react"
+import { FaPlayCircle } from "react-icons/fa";
 
 export default function Home() {
     const [audioBuffers, setAudioBuffers] = useState<{ audioBuffer1: AudioBuffer, audioBuffer2: AudioBuffer } | null>();
@@ -13,16 +14,17 @@ export default function Home() {
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length > 2) return;
+
         const fileNamesList = Array.from(files).map(file => file.name);
         setFileNames(prev => [...prev, ...fileNamesList])
 
         const fileArray = Array.from(files);
         setSelectedFiles(prev => {
-            const newSelectedFiles = [...prev, ...fileArray];          
+            const newSelectedFiles = [...prev, ...fileArray];
             if (newSelectedFiles.length === 2)
                 setIsDownloadEnabled(true)
             return newSelectedFiles;
-        })    
+        })
     };
 
     async function loadAudios() {
@@ -73,7 +75,7 @@ export default function Home() {
         }
 
         try {
-            const mixedBuffer =  await mixAudios(audioBuffers.audioBuffer1, audioBuffers.audioBuffer2, gain1, gain2);
+            const mixedBuffer = await mixAudios(audioBuffers.audioBuffer1, audioBuffers.audioBuffer2, gain1, gain2);
             const wavBlob = bufferToWave(mixedBuffer, mixedBuffer.length);
             const url = URL.createObjectURL(wavBlob);
 
@@ -109,7 +111,7 @@ export default function Home() {
     }, [selectedFiles, gain1, gain2])
 
     return (
-        <div className="w-[80%] mx-auto">            
+        <div className="w-[80%] mx-auto">
             <h1 className="font-bold text-5xl text-center uppercase mt-16">Back & Voice 4 You</h1>
             <h3 className="text-center text-xl mt-2">Mezcla audios para que suenen simultaneamente en un solo archivo</h3>
             <main className="mt-10">
@@ -134,22 +136,28 @@ export default function Home() {
                     </button>
                 </section>
                 <section className="border-2 rounded-md p-4">
-                    <h2 className="text-lg font-semibold mb-4">Visualización de audios</h2>
-                    <div>
+                    <div className="border p-4 rounded-md">
+                        <h2 className="text-lg font-semibold mb-4">Visualización de audios</h2>
                         <label htmlFor="files" className="shadow-md hover:shadow-blue-500 hover:bg-blue-400 transition delay-100 duration-300 ease-in-out p-2 rounded-md font-semibold cursor-pointer shadow-blue-500 bg-blue-500 text-white">
                             Agregar audio
                         </label>
                         <input id="files" multiple onChange={handleFileChange} className="hidden" type="file" />
-                        <div className="block mt-4">
-                            <h3 className="font-semibold text-lg">Audios cargados</h3>
-                            <h3 className="">{fileNames[0] && fileNames[0]} </h3>
-                            <h3 className="">{fileNames[1] && fileNames[1]} </h3>
-                        </div>
+                    </div>
+                    <div className="block mt-4 border p-4 rounded-md">
+                        <h3 className="font-semibold text-lg">Audios cargados</h3>
+                        {
+                            fileNames[0] && <h2 className="text-2xl my-2 px-4 py-2 border inline-block rounded-md cursor-pointer"><FaPlayCircle /></h2>
+                        }
+                        <h3 className="text-slate-500">{fileNames[0] && fileNames[0]} </h3>
+                        {
+                            fileNames[1] && <h2 className="text-2xl my-2 px-4 py-2 border inline-block rounded-md cursor-pointer"><FaPlayCircle /></h2>
+                        }
+                        <h3 className="text-slate-500">{fileNames[1] && fileNames[1]} </h3>
                     </div>
                 </section>
                 <div className="text-blue-500 mt-6">{textAlert}</div>
                 <section className="bg-blue-500 mt-16 p-4 rounded-md">
-                    <h2 className="text-center text-white">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Perferendis unde nobis reiciendis, adipisci veniam animi magnam expedita laborum, quisquam voluptatum quas, saepe corporis temporibus commodi libero amet laudantium fugiat! Porro.</h2>
+                    <h2 className="text-center text-white">Herramienta pensada para musicos, pero le puedes dar el uso que quieras.</h2>
                 </section>
             </main>
         </div>

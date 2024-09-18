@@ -7,3 +7,13 @@
 body {
     font-family: 'Rubik Variable', sans-serif;
 }
+
+.hide_elements {
+    display: flex;
+}
+
+@media (min-width: 360px) and (max-width: 765px) {
+    .hide_elements {
+        display: none;
+    }
+}

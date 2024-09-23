@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {}
+:root {
+    color-scheme: dark light;
+}
 
 body {
     font-family: 'Rubik Variable', sans-serif;

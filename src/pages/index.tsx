@@ -115,35 +115,35 @@ export default function Home() {
             <h1 className="font-bold text-5xl text-center uppercase mt-16">Back & Voice 4 You</h1>
             <h3 className="text-center text-xl mt-2">Mezcla audios para que suenen simultaneamente en un solo archivo</h3>
             <main className="mt-10">
-                <section className="border-2 rounded-md p-4 mb-4">
+                <section className="shadow-sm dark:shadow-black shadow-white rounded-md p-4 mb-4">
                     <h2 className="text-lg font-semibold mb-2">Panel de control</h2>
-                    <button onClick={handlePlay} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Reproducir Mezcla</button>
-                    <button onClick={handlePause} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Pausar</button>
-                    <button onClick={handleResume} className="hover:shadow-md hover:shadow-blue-200 transition delay-100 duration-300 ease-in-out border mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Reanudar</button>
-                    <div className="border rounded-md text-center mt-2 mr-3 inline-block p-2">
+                    <button onClick={handlePlay} className="dark:shadow-black shadow-sm shadow-white hover:shadow-md hover:shadow-white transition delay-100 duration-300 ease-in-out mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Reproducir Mezcla</button>
+                    <button onClick={handlePause} className="dark:shadow-black shadow-sm shadow-white hover:shadow-md hover:shadow-white transition delay-100 duration-300 ease-in-out mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Pausar</button>
+                    <button onClick={handleResume} className="dark:shadow-black shadow-sm shadow-white hover:shadow-md hover:shadow-white transition delay-100 duration-300 ease-in-out mt-2 mr-3 p-2 rounded-md font-semibold cursor-pointer">Reanudar</button>
+                    <div className="dark:shadow-black shadow-sm shadow-white rounded-md text-center mt-2 mr-3 inline-block p-2">
                         <label htmlFor="gain1" className="p-2 rounded-md font-semibold mr-3">Ganancia Audio 1:</label>
                         <input onChange={handleGainChange} id="gain1" className="outline-none text-center" type="number" defaultValue='1' step="0.1" min="0" max="10" />
                     </div>
-                    <div className="border rounded-md text-center mt-2 mr-3 inline-block p-2">
+                    <div className="dark:shadow-black shadow-sm shadow-white rounded-md text-center mt-2 mr-3 inline-block p-2">
                         <label htmlFor="gain2" className="p-2 rounded-md font-semibold mr-3">Ganancia Audio 2:</label>
                         <input onChange={handleGainChange} id="gain2" className="outline-none text-center" type="number" defaultValue='1' step="0.1" min="0" max="10" />
                     </div>
                     <button
                         onClick={() => handleDownloadClick()}
-                        className={`border mt-2 mr-3 p-2 rounded-md font-semibold ${isDownloadEnabled ? 'bg-green-500 opacity-100 text-white cursor-pointer' : 'cursor-default opacity-55'}`}
+                        className={`dark:shadow-black shadow-sm shadow-white mt-2 mr-3 p-2 rounded-md font-semibold ${isDownloadEnabled ? 'bg-green-500 opacity-100 text-white cursor-pointer' : 'cursor-default opacity-55'}`}
                     >
                         Descargar Audio Mezclado
                     </button>
                 </section>
-                <section className="border-2 rounded-md p-4">
-                    <div className="border p-4 rounded-md">
+                <section className="dark:shadow-black shadow-sm shadow-white rounded-md p-4">
+                    <div className="dark:shadow-black shadow-sm shadow-white p-4 rounded-md">
                         <h2 className="text-lg font-semibold mb-4">Visualización de audios</h2>
                         <label htmlFor="files" className="shadow-md hover:shadow-blue-500 hover:bg-blue-400 transition delay-100 duration-300 ease-in-out p-2 rounded-md font-semibold cursor-pointer shadow-blue-500 bg-blue-500 text-white">
                             Agregar audio
                         </label>
                         <input id="files" multiple onChange={handleFileChange} className="hidden" type="file" />
                     </div>
-                    <div className="block mt-4 border p-4 rounded-md">
+                    <div className="block mt-4 dark:shadow-black shadow-sm shadow-white p-4 rounded-md">
                         <h3 className="font-semibold text-lg">Audios cargados</h3>
                         {
                             fileNames[0] && <h2 className="text-2xl my-2 px-4 py-2 border inline-block rounded-md cursor-pointer"><FaPlayCircle /></h2>
@@ -157,7 +157,7 @@ export default function Home() {
                 </section>
                 <div className="text-blue-500 mt-6">{textAlert}</div>
                 <section className="bg-blue-500 mt-16 p-4 rounded-md">
-                    <h2 className="text-center text-white">Herramienta pensada para musicos, pero le puedes dar el uso que quieras.</h2>
+                    <h2 className="text-center">Herramienta pensada para musicos, pero le puedes dar el uso que quieras.</h2>
                 </section>
             </main>
         </div>

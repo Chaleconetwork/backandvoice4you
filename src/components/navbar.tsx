@@ -2,7 +2,7 @@ import Link from "next/link"
 
 export const Navbar = () => {
     return (
-        <nav className="flex justify-between border responsive_navbar">
+        <nav className="flex justify-between shadow-sm shadow-white responsive_navbar">
             <ul className="flex justify-center rounded-md hide_elements">
                 <Link href='/'><li className="p-4">Mezclador</li></Link>
                 <Link href='/'><li className="p-4">Sobre</li></Link>

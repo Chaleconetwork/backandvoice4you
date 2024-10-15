@@ -9,7 +9,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <div className="flex flex-col h-screen">
             <Navbar />
             <div className="grow">
-                <Component {...pageProps} />;
+                <Component {...pageProps} />
             </div>
             <Footer />
         </div>

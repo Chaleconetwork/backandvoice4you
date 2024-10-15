@@ -1,9 +1,14 @@
+let tracks: (AudioBufferSourceNode | null)[] = [];
 let audioContext: AudioContext | null = null;
-let track1: AudioBufferSourceNode | null = null;
-let track2: AudioBufferSourceNode | null = null;
-let startTime: number = 0;
-let isPlaying = false;
-let pausedTime = 0;
+let pausedTimes: number[] = [];
+let startTimes: number[] = [];
+let isPlaying: boolean[] = []; // Cambia a un arreglo para manejar el estado individualmente
+
+// const MAX_TRACKS = 10; // Cambia esto según el número máximo de pistas que esperas manejar
+// for (let i = 0; i < MAX_TRACKS; i++) {
+//     isPlaying[i] = false; // Inicializar todos los estados como false
+//     tracks[i] = null; // Inicializar todas las pistas como null
+// }
 
 export function initAudioContext() {
     if (!audioContext) {
@@ -12,95 +17,99 @@ export function initAudioContext() {
     return audioContext;
 }
 
-export async function loadAudioBuffers(buffer1: ArrayBuffer, buffer2: ArrayBuffer) {
+export async function loadAudioBuffers(buffers: ArrayBuffer[]) {
     const audioContext = initAudioContext();
 
     try {
-        const audioBuffer1 = await audioContext.decodeAudioData(buffer1);
-        const audioBuffer2 = await audioContext.decodeAudioData(buffer2);
-        // console.log(audioBuffer1, audioBuffer2)
-        return { audioBuffer1, audioBuffer2 };
+        const audioBuffers = await Promise.all(buffers.map(buffer => audioContext.decodeAudioData(buffer)));
+        return audioBuffers; // Devolver un array de AudioBuffers
     } catch (error) {
         console.error("Error decoding audio data:", error);
         throw new Error("Error decoding audio data");
     }
 }
 
-export function playAudios(audioBuffer1: AudioBuffer, audioBuffer2: AudioBuffer, offset = 0) {
+export function playAudio(buffer: AudioBuffer, index: number, gainValue: number = 1, offset = 0) {
     if (!audioContext) {
         console.error("AudioContext is not initialized.");
         return;
     }
 
-    // Crear nodos de audio para ambos archivos
-    track1 = audioContext.createBufferSource();
-    track2 = audioContext.createBufferSource();
+    if (!buffer) {
+        console.error(`Cannot play audio at index ${index}. Buffer is null.`);
+        return;
+    }
 
-    track1.buffer = audioBuffer1;
-    track2.buffer = audioBuffer2;
+    const track = audioContext.createBufferSource();
+    track.buffer = buffer;
 
-    // Conectar ambos nodos al destino
-    track1.connect(audioContext.destination);
-    track2.connect(audioContext.destination);
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = gainValue;
 
-    // Iniciar reproducción desde el offset (si es reanudación)
-    track1.start(0, offset);
-    track2.start(0, offset);
+    track.connect(gainNode).connect(audioContext.destination);
+    track.start(0, offset);
 
-    startTime = audioContext.currentTime - offset;
-    isPlaying = true;
+    // Almacenar la pista y su estado
+    tracks[index] = track;
+    startTimes[index] = audioContext.currentTime - offset;
+    isPlaying[index] = true; // Marcar como reproducido
+
+    // console.log(displayAudioDuration(duration))
+    console.log(`Playing audio at index: ${index}, isPlaying: ${isPlaying[index]} Track: ${tracks[index]}`); // Esto debería mostrar true
+};
+
+export function displayAudioDuration(duration: number) {
+    // Convertir la duración en minutos y segundos
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60).toString().padStart(2, '0'); // Asegura que los segundos siempre tengan 2 dígitos
+    return [minutes, parseInt(seconds)]
 }
 
-
-export function pauseAudios() {
+export function pauseAudios(index: number) {
     if (!audioContext) {
         console.error("AudioContext is not initialized.");
         return;
     }
-    
-    if (isPlaying && track1 && track2) {
-        pausedTime = audioContext.currentTime - startTime;
-        track1.stop();
-        track2.stop();
-        isPlaying = false;
+
+    if (isPlaying[index] && tracks[index]) {
+        pausedTimes[index] = audioContext.currentTime - startTimes[index];
+        tracks[index].stop(); // Detener la pista
+        isPlaying[index] = false
     }
 }
 
-export function resumeAudios(audioBuffer1: AudioBuffer, audioBuffer2: AudioBuffer) {
-    if (!isPlaying) {
-        playAudios(audioBuffer1, audioBuffer2, pausedTime);
+export function resumeAudios(buffer: AudioBuffer, index: number, gainValue: number) {
+    if (!audioContext) {
+        console.error("AudioContext is not initialized.");
+        return;
+    }
+
+    if (!isPlaying[index]) {
+        playAudio(buffer, index, gainValue, pausedTimes[index])
     }
 }
 
-export async function mixAudios(audioBuffer1: AudioBuffer, audioBuffer2: AudioBuffer, gain1: number = 1, gain2: number = 1) {
-    const context = new OfflineAudioContext(2, Math.max(audioBuffer1.length, audioBuffer2.length), audioBuffer1.sampleRate);
+export async function mixAudios(audioBuffers: AudioBuffer[], gains: number[] = []) {
+    const context = new OfflineAudioContext(2, Math.max(...audioBuffers.map(buffer => buffer.length)), audioBuffers[0].sampleRate);
 
-    // Crear los nodos de ganancia para cada track
-    const gainNode1 = context.createGain();
-    const gainNode2 = context.createGain();
+    // Crear un array para los nodos de ganancia
+    const gainNodes = audioBuffers.map((_, index) => {
+        const gainNode = context.createGain();
+        gainNode.gain.value = gains[index] || 1; // Usa la ganancia proporcionada o 1 por defecto
+        return gainNode;
+    });
 
-    gainNode1.gain.value = gain1;
-    gainNode2.gain.value = gain2;
+    // Crear los buffer source y conectarlos
+    audioBuffers.forEach((buffer, index) => {
+        const track = context.createBufferSource();
+        track.buffer = buffer;
+        track.connect(gainNodes[index]).connect(context.destination); // Conectar a su nodo de ganancia y luego al destino
+        track.start(0);
+    });
 
-    // Crear los buffer source
-    const track1 = context.createBufferSource();
-    const track2 = context.createBufferSource();
-
-    track1.buffer = audioBuffer1;
-    track2.buffer = audioBuffer2;
-
-    // Conectar cada track a su nodo de ganancia y luego al destino
-    track1.connect(gainNode1).connect(context.destination);
-    track2.connect(gainNode2).connect(context.destination);
-
-    // Iniciar las pistas
-    track1.start(0);
-    track2.start(0);
-
-    // Procesar la mezcla y renderizarla
-    const renderedBuffer = await context.startRendering();
-
-    return renderedBuffer;
+    // Renderizar el buffer mezclado
+    const mixedBuffer = await context.startRendering();
+    return mixedBuffer;
 }
 
 export function bufferToWave(abuffer: AudioBuffer, len: number): Blob {
@@ -113,6 +122,7 @@ export function bufferToWave(abuffer: AudioBuffer, len: number): Blob {
 
     let pos = 0;
 
+    // Funciones auxiliares para establecer datos en el DataView
     function setUint16(data: number) {
         view.setUint16(pos, data, true);
         pos += 2;
@@ -123,23 +133,23 @@ export function bufferToWave(abuffer: AudioBuffer, len: number): Blob {
         pos += 4;
     }
 
-    // Write WAVE header
+    // Escribir cabecera WAVE
     setUint32(0x46464952); // "RIFF"
-    setUint32(length - 8); // file length - 8
+    setUint32(length - 8); // longitud del archivo - 8
     setUint32(0x45564157); // "WAVE"
     setUint32(0x20746d66); // "fmt " chunk
-    setUint32(16); // length = 16
-    setUint16(1); // PCM (uncompressed)
+    setUint32(16); // longitud = 16
+    setUint16(1); // PCM (sin compresión)
     setUint16(numOfChannels);
     setUint32(sampleRate);
     setUint32(sampleRate * 2 * numOfChannels); // avg. bytes/sec
-    setUint16(numOfChannels * 2); // block-align
-    setUint16(16); // 16-bit (hardcoded in this demo)
+    setUint16(numOfChannels * 2); // bloque-alineación
+    setUint16(16); // 16-bit
 
     setUint32(0x61746164); // "data" - chunk
-    setUint32(length - pos - 4); // chunk length
+    setUint32(length - pos - 4); // longitud del chunk
 
-    // Write interleaved data
+    // Escribir datos intercalados
     for (let i = 0; i < abuffer.length; i++) {
         for (let channel = 0; channel < numOfChannels; channel++) {
             channels[channel] = abuffer.getChannelData(channel);

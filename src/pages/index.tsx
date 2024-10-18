@@ -1,4 +1,4 @@
-import { bufferToWave, displayAudioDuration, loadAudioBuffers, mixAudios, pauseAudios, playAudio, resumeAudios } from "@/utils/funcs/audioControls";
+import { bufferToWave, loadAudioBuffers, mixAudios, pauseAudios, playAudio, resumeAudios } from "@/utils/funcs/audioControls";
 import { ChangeEvent, useEffect, useRef, useState } from "react"
 import { FaPlayCircle, FaRegPauseCircle } from "react-icons/fa";
 
@@ -8,7 +8,7 @@ export default function Home() {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [fileNames, setFileNames] = useState<string[]>([]);
     const [textAlert, setTextAlert] = useState<string>('')
-    const [duration, setDuration] = useState<{ minutes: number, seconds: number }[] | null>();
+    // const [duration, setDuration] = useState<{ minutes: number, seconds: number }[] | null>();
     const [pause, setPause] = useState<boolean>(false);
     const [gains, setGains] = useState<number[]>([]);
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]); // Refs para los canvas
@@ -33,28 +33,6 @@ export default function Home() {
 
         setGains(Array(fileArray.length).fill(1));
     };
-
-    async function loadAudios() {
-        try {
-            const buffers = await Promise.all(selectedFiles.map(file => file.arrayBuffer()));
-            const loadedBuffers = await loadAudioBuffers(buffers);
-            setAudioBuffers(loadedBuffers);
-
-            const calculatedDurations = loadedBuffers.map(buffer => {
-                const [minutes, seconds] = displayAudioDuration(buffer.duration);
-                return { minutes, seconds };
-            });
-
-            setDuration(calculatedDurations);
-
-            // Dibujar la forma de onda para cada buffer
-            loadedBuffers.forEach((buffer, index) => {
-                drawWaveform(buffer, canvasRefs.current[index]);
-            });
-        } catch (error) {
-            console.error("Error loading audio buffers:", error);
-        }
-    }
 
     const drawWaveform = (buffer: AudioBuffer, canvas: HTMLCanvasElement | null) => {
         if (!canvas) return;
@@ -98,7 +76,7 @@ export default function Home() {
         if (audioBuffers && audioBuffers[index]) {
             pauseAudios(index); // Detener otros audios si se desea
             playAudio(audioBuffers[index], index, gains[index]);
-            const [minutes, seconds] = displayAudioDuration(audioBuffers[index].duration)
+            // const [minutes, seconds] = displayAudioDuration(audioBuffers[index].duration)
 
             // setDuration({ minutes: minutes, seconds: seconds })
             setPause(true)
@@ -173,8 +151,30 @@ export default function Home() {
     };
 
     useEffect(() => {
+        async function loadAudios() {
+            try {
+                const buffers = await Promise.all(selectedFiles.map(file => file.arrayBuffer()));
+                const loadedBuffers = await loadAudioBuffers(buffers);
+                setAudioBuffers(loadedBuffers);
+
+                // const calculatedDurations = loadedBuffers.map(buffer => {
+                //     const [minutes, seconds] = displayAudioDuration(buffer.duration);
+                //     return { minutes, seconds };
+                // });
+
+                // setDuration(calculatedDurations);
+
+                // Dibujar la forma de onda para cada buffer
+                loadedBuffers.forEach((buffer, index) => {
+                    drawWaveform(buffer, canvasRefs.current[index]);
+                });
+            } catch (error) {
+                console.error("Error loading audio buffers:", error);
+            }
+        }
+        
         loadAudios()
-    }, [selectedFiles, pause])
+    }, [selectedFiles])
 
     return (
         <div className="w-[80%] mx-auto">

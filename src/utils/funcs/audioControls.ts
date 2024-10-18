@@ -1,8 +1,8 @@
-let tracks: (AudioBufferSourceNode | null)[] = [];
+const tracks: (AudioBufferSourceNode | null)[] = [];
 let audioContext: AudioContext | null = null;
-let pausedTimes: number[] = [];
-let startTimes: number[] = [];
-let isPlaying: boolean[] = []; // Cambia a un arreglo para manejar el estado individualmente
+const pausedTimes: number[] = [];
+const startTimes: number[] = [];
+const isPlaying: boolean[] = []; // Cambia a un arreglo para manejar el estado individualmente
 
 // const MAX_TRACKS = 10; // Cambia esto según el número máximo de pistas que esperas manejar
 // for (let i = 0; i < MAX_TRACKS; i++) {
@@ -90,6 +90,7 @@ export function resumeAudios(buffer: AudioBuffer, index: number, gainValue: numb
 }
 
 export async function mixAudios(audioBuffers: AudioBuffer[], gains: number[] = []) {
+    console.log(gains)
     const context = new OfflineAudioContext(2, Math.max(...audioBuffers.map(buffer => buffer.length)), audioBuffers[0].sampleRate);
 
     // Crear un array para los nodos de ganancia
